@@ -1,0 +1,35 @@
+initContainers:
+  - name: install-skill-manifests
+    image: ghcr.io/liuyanzhi3535/openclaw-skills:latest
+    imagePullPolicy: Always
+    command:
+      - sh
+      - -c
+      - |
+        for skill in /app/skills/*/; do
+          name=$(basename "$skill")
+          if [ -f "$skill/SKILL.md" ]; then
+            mkdir -p /workspace/skills/$name
+            cp "$skill/SKILL.md" "/workspace/skills/$name/SKILL.md"
+            echo "Installed SKILL.md for $name"
+          fi
+        done
+    volumeMounts:
+      - name: data
+        mountPath: /workspace
+        subPath: workspace
+
+extraContainers:
+  - name: skill-executor
+    image: ghcr.io/liuyanzhi3535/openclaw-skills:latest
+    imagePullPolicy: Always
+    livenessProbe:
+      httpGet:
+        path: /healthz
+        port: 8080
+        host: 127.0.0.1
+      periodSeconds: 30
+    volumeMounts:
+      - name: data
+        mountPath: /credentials
+        subPath: credentials

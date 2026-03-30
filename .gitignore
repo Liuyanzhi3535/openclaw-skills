@@ -1,0 +1,10 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.coverage
+htmlcov/
+
+# OAuth credentials（絕對不能 commit）
+scripts/client_secret*.json
+scripts/google_token.json
