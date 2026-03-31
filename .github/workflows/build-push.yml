@@ -40,5 +40,4 @@ jobs:
           username: ubuntu
           key: ${{ secrets.SSH_KEY }}
           script: |
-            export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
-            kubectl rollout restart deployment/openclaw-openclaw-helm -n openclaw
+            sudo kubectl rollout restart deployment/openclaw-openclaw-helm -n openclaw
