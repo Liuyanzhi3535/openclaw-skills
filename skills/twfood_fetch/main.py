@@ -72,7 +72,7 @@ async def _fetch_items(category: str, pages: int) -> list[dict]:
     items = []
     async with httpx.AsyncClient(timeout=10) as client:
         for page in range(1, pages + 1):
-            url = f"{BASE_URL}/{category}?page={page}&per-page=10"
+            url = f"{BASE_URL}/{category}?page={page}"
             try:
                 resp = await client.get(url, follow_redirects=True)
                 resp.raise_for_status()

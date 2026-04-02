@@ -22,7 +22,7 @@ exec: curl -s -X POST http://127.0.0.1:8080/skill/twfood-fetch -H "Content-Type:
 |------|------|------|
 | top_n | 10 | 回傳前 N 筆 |
 | include_fruit | false | true 時同時查水果 |
-| pages | 1 | 爬幾頁（每頁 10 筆） |
+| pages | 1 | 爬幾頁（每頁約 5 筆） |
 
 ## 回傳格式
 

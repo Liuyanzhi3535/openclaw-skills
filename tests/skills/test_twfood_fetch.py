@@ -54,10 +54,10 @@ VEGE_HTML = """
 @pytest.fixture
 def mock_twfood():
     with respx.mock(assert_all_called=False) as mock:
-        mock.get("https://www.twfood.cc/vege?page=1&per-page=10").mock(
+        mock.get("https://www.twfood.cc/vege?page=1").mock(
             return_value=httpx.Response(200, text=VEGE_HTML)
         )
-        mock.get("https://www.twfood.cc/fruit?page=1&per-page=10").mock(
+        mock.get("https://www.twfood.cc/fruit?page=1").mock(
             return_value=httpx.Response(200, text="")
         )
         yield mock
@@ -92,7 +92,7 @@ async def test_fetch_include_fruit(client, mock_twfood):
 
 async def test_fetch_upstream_error(client):
     with respx.mock(assert_all_called=False) as mock:
-        mock.get("https://www.twfood.cc/vege?page=1&per-page=10").mock(
+        mock.get("https://www.twfood.cc/vege?page=1").mock(
             return_value=httpx.Response(500)
         )
         response = await client.post("/skill/twfood-fetch", json={"top_n": 10})
