@@ -12,36 +12,18 @@ description: 查詢台灣蔬果批發與零售價格排行。
 
 ## 呼叫方式
 
-使用 fetch tool 發送 POST 請求：
+使用 exec tool 執行以下指令：
 
-URL: http://localhost:8080/skill/twfood-fetch
-Method: POST
-Content-Type: application/json
-Body: {"top_n": 10, "include_fruit": false}
-
-參數（皆選填）：
-- top_n：回傳筆數，預設 10
-- include_fruit：是否含水果，預設 false
-- pages：爬幾頁，預設 1
+```bash
+curl -s -X POST http://localhost:8080/skill/twfood-fetch \
+  -H "Content-Type: application/json" \
+  -d '{"top_n": 10, "include_fruit": false}'
+```
 
 ## 回傳解讀
 
-```json
-{
-  "total": 10,
-  "items": [
-    {
-      "rank": 1,
-      "name": "甘藍",
-      "aliases": ["高麗菜", "捲心菜"],
-      "wholesale_price_kg": 6.4,
-      "retail_price_kg": 13.0,
-      "weekly_volume_ton": 3942
-    }
-  ]
-}
-```
-
-- `weekly_volume_ton`：越大越盛產，優先推薦前 5 名
-- `retail_price_kg`：零售估價（元/公斤），跟用戶溝通用這個
-- `aliases`：用俗名跟用戶溝通（說「高麗菜」而非「甘藍-初秋」）
+- name：蔬菜名稱
+- aliases：俗名（用這個跟用戶溝通）
+- wholesale_price_kg：批發價（元/公斤）
+- retail_price_kg：零售價（元/公斤），用這個估算採購成本
+- weekly_volume_ton：本週交易量（公噸），越大越盛產越便宜，優先推薦前5名
