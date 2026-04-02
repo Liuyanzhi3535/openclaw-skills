@@ -21,22 +21,21 @@ exec: curl -s -X POST http://127.0.0.1:8080/skill/twfood-fetch -H "Content-Type:
 | 欄位 | 預設 | 說明 |
 |------|------|------|
 | top_n | 10 | 回傳前 N 筆 |
-| include_fruit | false | true 時同時查水果 |
-| pages | 1 | 爬幾頁（每頁約 5 筆） |
+| include_fruit | false | true 時同時查水果，與蔬菜合併排行 |
+| days | 1 | 查最近幾天均值（預設當日，若當日未更新自動改昨日） |
 
 ## 回傳格式
 
 ```json
 {
+  "data_date": "115.04.02",
   "total": 10,
   "items": [
     {
-      "rank": 1,
-      "name": "甘藍",
-      "aliases": ["高麗菜", "捲心菜"],
-      "wholesale_price_kg": 6.4,
-      "retail_price_kg": 13.0,
-      "weekly_volume_ton": 3942
+      "name": "甘藍-初秋",
+      "avg_price_kg": 8.5,
+      "total_volume_kg": 312000,
+      "market_count": 12
     }
   ]
 }
@@ -44,7 +43,8 @@ exec: curl -s -X POST http://127.0.0.1:8080/skill/twfood-fetch -H "Content-Type:
 
 ## 回傳解讀
 
-- items 已依 weekly_volume_ton 由大到小排序（越大越盛產越便宜）
-- aliases：俗名，用這個跟用戶溝通（說「高麗菜」而非「甘藍」）
-- retail_price_kg：零售估價（元/公斤），用這個估算採購成本
-- weekly_volume_ton：本週交易量（公噸），優先推薦前 5 名
+- items 已依 total_volume_kg 由大到小排序（交易量越大越盛產越便宜）
+- name：作物名稱，跟用戶溝通時可簡化（「甘藍-初秋」說成「高麗菜」）
+- avg_price_kg：加權平均批發價（元/公斤），零售約為此價 × 1.5–2 倍
+- total_volume_kg：全台各市場當日總交易量（公斤），優先推薦前 5 名
+- data_date：資料日期（民國年），農委會每日 20:30 更新
