@@ -1,36 +1,28 @@
 ---
 name: twfood-fetch
-description: 查詢台灣當週盛產蔬菜和水果的批發行情。
-             當用戶說「當季食材」「菜價」「水果行情」「規劃菜單」「便宜蔬菜」時使用。
+description: 查詢台灣蔬果批發與零售價格排行。
+             當用戶說「菜價」「蔬菜多少錢」「最便宜的菜」「水果價格」「當季食材」「規劃菜單」時使用。
 ---
 
 ## 何時使用
 
-- 需要知道現在什麼蔬果最便宜、最盛產
-- 規劃一週菜單前，先查當季食材
-- 用戶問「現在什麼菜最便宜」「當季有什麼水果」
+- 查詢本週台灣蔬菜/水果批發、零售價格
+- 查詢交易量排行
+- 規劃菜單前查詢當季便宜食材
 
 ## 呼叫方式
 
-```bash
-# 只查蔬菜（預設）
-curl -X POST http://localhost:8080/skill/twfood-fetch \
-  -H "Content-Type: application/json" \
-  -d '{"top_n": 10}'
+使用 fetch tool 發送 POST 請求：
 
-# 含水果
-curl -X POST http://localhost:8080/skill/twfood-fetch \
-  -H "Content-Type: application/json" \
-  -d '{"top_n": 10, "include_fruit": true}'
-```
+URL: http://localhost:8080/skill/twfood-fetch
+Method: POST
+Content-Type: application/json
+Body: {"top_n": 10, "include_fruit": false}
 
-## 參數
-
-| 欄位 | 預設 | 說明 |
-|------|------|------|
-| `top_n` | 10 | 回傳前 N 筆（依成交量排序） |
-| `include_fruit` | false | 是否含水果 |
-| `pages` | 1 | 爬幾頁（每頁 10 筆，通常 1 頁就夠） |
+參數（皆選填）：
+- top_n：回傳筆數，預設 10
+- include_fruit：是否含水果，預設 false
+- pages：爬幾頁，預設 1
 
 ## 回傳解讀
 
