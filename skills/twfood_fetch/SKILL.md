@@ -22,7 +22,7 @@ exec: curl -s -X POST http://127.0.0.1:8080/skill/twfood-fetch -H "Content-Type:
 |------|------|------|
 | top_n | 10 | 回傳前 N 筆 |
 | include_fruit | false | true 時同時查水果，與蔬菜合併排行 |
-| days | 1 | 查最近幾天均值（預設當日，若當日未更新自動改昨日） |
+| days | 7 | 查最近幾天均值（預設 7 天，自動跳過休市日） |
 
 ## 回傳格式
 

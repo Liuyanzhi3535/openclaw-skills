@@ -7,9 +7,8 @@ from pydantic import BaseModel
 
 router = APIRouter(prefix="/skill/twfood-fetch")
 
-API_URL = "https://data.moa.gov.tw/Service/OpenData/FromM/FarmTransData.aspx"
+API_URL = "https://data.moa.gov.tw/api/v1/AgriProductsTransType/"
 
-# 種類代碼
 CATEGORY_VEGE = "N04"
 CATEGORY_FRUIT = "N05"
 
@@ -19,38 +18,42 @@ def _to_roc(d: date) -> str:
     return f"{d.year - 1911}.{d.month:02d}.{d.day:02d}"
 
 
-async def _fetch_raw(start: date, end: date) -> list[dict]:
+async def _fetch_raw(start: date, end: date, tc_type: str) -> list[dict]:
     params = {
-        "$top": 9999,
-        "StartDate": _to_roc(start),
-        "EndDate": _to_roc(end),
+        "Start_time": _to_roc(start),
+        "End_time": _to_roc(end),
+        "TcType": tc_type,
     }
     async with httpx.AsyncClient(timeout=15) as client:
         try:
-            resp = await client.get(API_URL, params=params)
+            resp = await client.get(API_URL, params=params, headers={"accept": "application/json"})
             resp.raise_for_status()
         except httpx.HTTPError as e:
             raise HTTPException(status_code=502, detail=f"農委會 API 請求失敗: {e}")
-    return resp.json()
+
+    body = resp.json()
+    if body.get("RS") != "OK":
+        return []
+    return body.get("Data") or []
 
 
-def _aggregate(records: list[dict], category: str) -> list[dict]:
-    """同一作物跨市場加總交易量，加權平均價格。"""
+def _aggregate(records: list[dict]) -> list[dict]:
+    """同一作物跨市場加總交易量、加權平均價格。"""
     by_crop: dict[str, dict] = defaultdict(lambda: {
         "total_volume": 0.0,
         "weighted_price_sum": 0.0,
-        "markets": [],
+        "markets": set(),
     })
 
     for r in records:
-        if r["種類代碼"] != category:
+        name = r["CropName"]
+        vol = r["Trans_Quantity"] or 0
+        price = r["Avg_Price"] or 0
+        if name == "休市" or vol == 0:
             continue
-        name = r["作物名稱"]
-        vol = r["交易量"] or 0
-        price = r["平均價"] or 0
         by_crop[name]["total_volume"] += vol
         by_crop[name]["weighted_price_sum"] += vol * price
-        by_crop[name]["markets"].append(r["市場名稱"])
+        by_crop[name]["markets"].add(r["MarketName"])
 
     result = []
     for name, agg in by_crop.items():
@@ -60,7 +63,7 @@ def _aggregate(records: list[dict], category: str) -> list[dict]:
             "name": name,
             "avg_price_kg": round(avg_price, 1),
             "total_volume_kg": int(vol),
-            "market_count": len(set(agg["markets"])),
+            "market_count": len(agg["markets"]),
         })
 
     result.sort(key=lambda x: x["total_volume_kg"], reverse=True)
@@ -72,7 +75,7 @@ def _aggregate(records: list[dict], category: str) -> list[dict]:
 class FetchRequest(BaseModel):
     top_n: int = 10
     include_fruit: bool = False
-    days: int = 1  # 查最近幾天（預設當日）
+    days: int = 7  # 查最近幾天，預設 7 天避開休市日
 
 
 @router.post("")
@@ -80,27 +83,24 @@ async def fetch(req: FetchRequest):
     end = date.today()
     start = end - timedelta(days=req.days - 1)
 
-    raw = await _fetch_raw(start, end)
+    vege_raw = await _fetch_raw(start, end, CATEGORY_VEGE)
+    vege = _aggregate(vege_raw)
 
-    if not raw:
-        # 今日資料尚未更新（每日 20:30 更新），改抓昨天
-        end = end - timedelta(days=1)
-        start = end - timedelta(days=req.days - 1)
-        raw = await _fetch_raw(start, end)
-
-    if not raw:
-        raise HTTPException(status_code=503, detail="農委會資料暫時無法取得")
-
-    data_date = raw[0]["交易日期"]
-    vege = _aggregate(raw, CATEGORY_VEGE)
-    result = vege
+    if not vege:
+        raise HTTPException(status_code=503, detail="農委會資料暫時無法取得，請稍後再試")
 
     if req.include_fruit:
-        fruit = _aggregate(raw, CATEGORY_FRUIT)
+        fruit_raw = await _fetch_raw(start, end, CATEGORY_FRUIT)
+        fruit = _aggregate(fruit_raw)
         result = sorted(vege + fruit, key=lambda x: x["total_volume_kg"], reverse=True)
+    else:
+        result = vege
+
+    data_date = vege_raw[-1]["TransDate"] if vege_raw else _to_roc(end)
 
     return {
         "data_date": data_date,
+        "period": f"{_to_roc(start)} ~ {_to_roc(end)}",
         "total": min(len(result), req.top_n),
         "items": result[: req.top_n],
     }
