@@ -12,7 +12,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends curl \
 COPY --from=builder /app/.venv /app/.venv
 COPY sidecar/ ./sidecar/
 COPY skills/ ./skills/
-RUN ls skills/ > /app/skills.txt
+RUN ls skills/ | grep -E '^[a-zA-Z0-9_-]+$' > /app/skills.txt
 ENV PATH="/app/.venv/bin:$PATH" \
     PYTHONPATH=/app \
     PYTHONDONTWRITEBYTECODE=1 \
