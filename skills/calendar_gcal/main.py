@@ -2,28 +2,23 @@ import os
 from typing import Optional
 
 from fastapi import APIRouter, HTTPException
-from google.auth.transport.requests import Request
-from google.oauth2.credentials import Credentials
+from google.oauth2 import service_account
 from googleapiclient.discovery import build
 from pydantic import BaseModel
 
-router = APIRouter(prefix="/skill/calendar-gcal")
+router = APIRouter(prefix="/skill/calendar_gcal")
 
-TOKEN_PATH = os.environ.get("GOOGLE_TOKEN_PATH", "/credentials/google_token.json")
+SERVICE_ACCOUNT_PATH = os.environ.get("GOOGLE_SERVICE_ACCOUNT_PATH", "/credentials/service_account.json")
 SCOPES = ["https://www.googleapis.com/auth/calendar"]
 
 
 def get_service():
-    if not os.path.exists(TOKEN_PATH):
-        raise HTTPException(status_code=503, detail="Google token not found. Run OAuth flow first.")
+    if not os.path.exists(SERVICE_ACCOUNT_PATH):
+        raise HTTPException(status_code=503, detail="Service account key not found.")
 
-    creds = Credentials.from_authorized_user_file(TOKEN_PATH, SCOPES)
-
-    if creds.expired and creds.refresh_token:
-        creds.refresh(Request())
-        with open(TOKEN_PATH, "w") as f:
-            f.write(creds.to_json())
-
+    creds = service_account.Credentials.from_service_account_file(
+        SERVICE_ACCOUNT_PATH, scopes=SCOPES
+    )
     return build("calendar", "v3", credentials=creds)
 
 
@@ -32,7 +27,7 @@ def get_service():
 class ListRequest(BaseModel):
     time_min: str
     time_max: str
-    calendar_id: str = "primary"
+    calendar_id: str = "zea00312@gmail.com"
     max_results: int = 20
 
 
@@ -70,7 +65,7 @@ class CreateRequest(BaseModel):
     end: str
     location: Optional[str] = None
     description: Optional[str] = None
-    calendar_id: str = "primary"
+    calendar_id: str = "zea00312@gmail.com"
 
 
 @router.post("/create")
