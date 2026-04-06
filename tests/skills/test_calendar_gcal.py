@@ -1,4 +1,3 @@
-import pytest
 
 
 async def test_list_events_returns_events(client, mock_google_service):

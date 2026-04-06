@@ -9,7 +9,7 @@
 """
 
 import os
-import json
+
 from google_auth_oauthlib.flow import InstalledAppFlow
 
 SCOPES = ["https://www.googleapis.com/auth/calendar"]
@@ -30,10 +30,16 @@ def main():
     print()
     print("  # 取得 Pod 名稱")
     print("  export KUBECONFIG=/etc/rancher/k3s/k3s.yaml")
-    print("  POD=$(kubectl get pod -n openclaw -l app.kubernetes.io/name=openclaw-helm -o jsonpath='{.items[0].metadata.name}')")
+    jsonpath = "'{.items[0].metadata.name}'"
+    print(
+        f"  POD=$(kubectl get pod -n openclaw"
+        f" -l app.kubernetes.io/name=openclaw-helm"
+        f" -o jsonpath={jsonpath})"
+    )
     print()
     print("  # 上傳 token 至 PVC")
-    print(f"  kubectl cp {OUTPUT_TOKEN} openclaw/$POD:/home/node/.openclaw/credentials/google_token.json -c main")
+    dest = "/home/node/.openclaw/credentials/google_token.json"
+    print(f"  kubectl cp {OUTPUT_TOKEN} openclaw/$POD:{dest} -c main")
 
 
 if __name__ == "__main__":

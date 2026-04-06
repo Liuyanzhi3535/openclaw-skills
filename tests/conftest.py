@@ -1,6 +1,7 @@
-import pytest
-from httpx import AsyncClient, ASGITransport
 from unittest.mock import MagicMock, patch
+
+import pytest
+from httpx import ASGITransport, AsyncClient
 
 from sidecar.router import app
 

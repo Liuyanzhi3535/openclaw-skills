@@ -1,13 +1,11 @@
-from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel
-from typing import Optional
 import os
-import json
-from datetime import datetime, timezone
+from typing import Optional
 
-from google.oauth2.credentials import Credentials
+from fastapi import APIRouter, HTTPException
 from google.auth.transport.requests import Request
+from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
+from pydantic import BaseModel
 
 router = APIRouter(prefix="/skill/calendar-gcal")
 
