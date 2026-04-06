@@ -9,7 +9,7 @@ from pydantic import BaseModel
 
 router = APIRouter(prefix="/skill/calendar-gcal")
 
-TOKEN_PATH = "/credentials/google_token.json"
+TOKEN_PATH = os.environ.get("GOOGLE_TOKEN_PATH", "/credentials/google_token.json")
 SCOPES = ["https://www.googleapis.com/auth/calendar"]
 
 
