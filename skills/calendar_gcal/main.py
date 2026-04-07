@@ -59,6 +59,11 @@ async def list_events(req: ListRequest):
 
 # ---------- create ----------
 
+class ReminderOverride(BaseModel):
+    method: str = "popup"  # "popup" 或 "email"
+    minutes: int = 30
+
+
 class CreateRequest(BaseModel):
     summary: str
     start: str
@@ -66,6 +71,7 @@ class CreateRequest(BaseModel):
     location: Optional[str] = None
     description: Optional[str] = None
     calendar_id: str = "zea00312@gmail.com"
+    reminders: Optional[list[ReminderOverride]] = None
 
 
 @router.post("/create")
@@ -80,6 +86,11 @@ async def create_event(req: CreateRequest):
         body["location"] = req.location
     if req.description:
         body["description"] = req.description
+    if req.reminders is not None:
+        body["reminders"] = {
+            "useDefault": False,
+            "overrides": [{"method": r.method, "minutes": r.minutes} for r in req.reminders],
+        }
 
     event = service.events().insert(calendarId=req.calendar_id, body=body).execute()
 
