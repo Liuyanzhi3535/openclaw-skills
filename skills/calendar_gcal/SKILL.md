@@ -30,7 +30,8 @@ curl -X POST http://localhost:8080/skill/calendar_gcal/create \
   -d '{
     "summary": "牙醫預約",
     "start": "2026-03-30T10:00:00+08:00",
-    "end": "2026-03-30T11:00:00+08:00"
+    "end": "2026-03-30T11:00:00+08:00",
+    "calendar_id": "zea00312@gmail.com"
   }'
 ```
 
